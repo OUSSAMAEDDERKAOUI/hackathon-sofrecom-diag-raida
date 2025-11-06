@@ -1,6 +1,11 @@
 from flask import Flask, jsonify
 from app.config import config
-from app.routes import analysis_routes, evaluation_routes, recommendation_routes
+from app.routes import (
+    analysis_routes, 
+    evaluation_routes, 
+    recommendation_routes,
+    diagnostic_routes  # Add this import
+)
 import os
 
 
@@ -18,6 +23,7 @@ def create_app(config_name=None):
     app.register_blueprint(analysis_routes.bp)
     app.register_blueprint(evaluation_routes.bp)
     app.register_blueprint(recommendation_routes.bp)
+    app.register_blueprint(diagnostic_routes.bp)  # Register diagnostic routes
     
     # Health check endpoint
     @app.route('/health', methods=['GET'])
@@ -38,7 +44,12 @@ def create_app(config_name=None):
                 'health': '/health',
                 'analysis': '/api/analysis',
                 'evaluation': '/api/evaluation',
-                'recommendation': '/api/recommendation'
+                'recommendation': '/api/recommendation',
+                'diagnostic': {
+                    'get_test': '/api/diagnostic/test?num_questions=5',
+                    'submit': '/api/diagnostic/submit',
+                    'get_question': '/api/diagnostic/question/<question_id>'
+                }
             }
         }), 200
     
