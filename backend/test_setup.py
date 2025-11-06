@@ -100,8 +100,15 @@ def test_virtual_env():
         hasattr(sys, 'base_prefix') and sys.base_prefix != sys.prefix
     )
     
+    # Check if running in CI/CD environment
+    is_ci = os.environ.get('CI') == 'true' or os.environ.get('GITHUB_ACTIONS') == 'true'
+    
     if in_venv:
         print(f"  ✅ Running in virtual environment")
+        print(f"  ✅ Python path: {sys.prefix}")
+        return True
+    elif is_ci:
+        print(f"  ✅ Running in CI/CD environment (venv not required)")
         print(f"  ✅ Python path: {sys.prefix}")
         return True
     else:
