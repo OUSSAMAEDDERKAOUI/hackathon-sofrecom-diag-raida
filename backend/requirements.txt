@@ -10,3 +10,5 @@ black==24.10.0
 isort==5.13.2
 safety==3.2.8
 bandit==1.7.10
+requests==2.31.0
+python-dotenv==1.0.1
