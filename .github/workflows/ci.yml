@@ -39,12 +39,12 @@ jobs:
       - name: Run tests with pytest
         working-directory: ./backend
         run: |
-          pytest tests/ -v --tb=short --color=yes
+          pytest tests/ -v --tb=short
       
       - name: Test Flask app import
         working-directory: ./backend
         run: |
-          python -c "from app.main import create_app; app = create_app('testing'); print('✅ App imports successfully')"
+          python test_import.py
 
   lint:
     name: Code Quality Checks
