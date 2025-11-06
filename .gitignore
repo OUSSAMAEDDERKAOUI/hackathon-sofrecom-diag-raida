@@ -1,12 +1,44 @@
 # Python
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
 venv/
+env/
 .env
 *.pkl
+*.joblib
+*.egg-info/
+dist/
+build/
+
+# Pytest
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
 
 # Streamlit
 frontend/.streamlit/
 
 # OS
 .DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Models (if too large)
+# backend/app/models/saved/*.pkl
+# backend/app/models/saved/*.joblib
