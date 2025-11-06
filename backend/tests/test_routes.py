@@ -52,7 +52,27 @@ class TestRoutes(unittest.TestCase):
     
     def test_recommendation_route(self):
         """Test recommendation endpoint"""
-        payload = {'test': 'data'}
+        payload = {
+            'student_data': {
+                'student_id': 'test_student_1',
+                'grade': 8,
+                'responses': [
+                    {'question_id': 'q1', 'answer': '2x + 3 = 7', 'is_correct': True},
+                    {'question_id': 'q2', 'answer': '3x - 5 = 10', 'is_correct': False}
+                ]
+            },
+            'analysis_results': {
+                'weak_areas': ['solving_equations', 'fractions'],
+                'strengths': ['basic_arithmetic'],
+                'accuracy': 0.75
+            },
+            'evaluation_results': {
+                'score': 75,
+                'total_questions': 4,
+                'correct_answers': 3,
+                'difficulty_level': 'intermediate'
+            }
+        }
         response = self.client.post(
             '/api/recommendation/',
             data=json.dumps(payload),
@@ -61,6 +81,7 @@ class TestRoutes(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.data)
         self.assertEqual(data['status'], 'success')
+        self.assertIn('recommendations', data)
     
     def test_404_error(self):
         """Test 404 error handler"""

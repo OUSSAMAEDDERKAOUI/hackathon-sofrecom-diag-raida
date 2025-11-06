@@ -1,7 +1,12 @@
 from flask import Flask, jsonify
 from flask_cors import CORS
 from app.config import config
-from app.routes import analysis_routes, evaluation_routes, recommendation_routes
+from app.routes import (
+    analysis_routes, 
+    evaluation_routes, 
+    recommendation_routes,
+    diagnostic_routes  # Add this import
+)
 import os
 
 
@@ -10,6 +15,7 @@ def create_app(config_name=None):
     app = Flask(__name__)
 
     CORS(app)
+    app.config['FLASK_APP'] = 'app.main:create_app'  # Add this line to specify the application factory
     
     # Load configuration
     if config_name is None:
@@ -20,6 +26,7 @@ def create_app(config_name=None):
     app.register_blueprint(analysis_routes.bp)
     app.register_blueprint(evaluation_routes.bp)
     app.register_blueprint(recommendation_routes.bp)
+    app.register_blueprint(diagnostic_routes.bp)  # Register diagnostic routes
     
     # Health check endpoint
     @app.route('/health', methods=['GET'])
@@ -40,7 +47,12 @@ def create_app(config_name=None):
                 'health': '/health',
                 'analysis': '/api/analysis',
                 'evaluation': '/api/evaluation',
-                'recommendation': '/api/recommendation'
+                'recommendation': '/api/recommendation',
+                'diagnostic': {
+                    'get_test': '/api/diagnostic/test?num_questions=5',
+                    'submit': '/api/diagnostic/submit',
+                    'get_question': '/api/diagnostic/question/<question_id>'
+                }
             }
         }), 200
     
@@ -54,3 +66,9 @@ def create_app(config_name=None):
         return jsonify({'error': 'Internal server error'}), 500
     
     return app
+
+
+# This allows running the app directly with: python -m app.main
+if __name__ == '__main__':
+    app = create_app()
+    app.run(host='0.0.0.0', port=5000, debug=True)
