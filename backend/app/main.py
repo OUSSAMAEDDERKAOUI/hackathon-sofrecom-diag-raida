@@ -7,6 +7,7 @@ import os
 def create_app(config_name=None):
     """Application factory pattern"""
     app = Flask(__name__)
+    app.config['FLASK_APP'] = 'app.main:create_app'  # Add this line to specify the application factory
     
     # Load configuration
     if config_name is None:
@@ -51,3 +52,9 @@ def create_app(config_name=None):
         return jsonify({'error': 'Internal server error'}), 500
     
     return app
+
+
+# This allows running the app directly with: python -m app.main
+if __name__ == '__main__':
+    app = create_app()
+    app.run(host='0.0.0.0', port=5000, debug=True)
