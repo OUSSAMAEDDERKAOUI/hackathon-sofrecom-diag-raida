@@ -1,4 +1,5 @@
 from flask import Flask, jsonify
+from flask_cors import CORS
 from app.config import config
 from app.routes import analysis_routes, evaluation_routes, recommendation_routes
 import os
@@ -7,6 +8,8 @@ import os
 def create_app(config_name=None):
     """Application factory pattern"""
     app = Flask(__name__)
+
+    CORS(app)
     
     # Load configuration
     if config_name is None:
