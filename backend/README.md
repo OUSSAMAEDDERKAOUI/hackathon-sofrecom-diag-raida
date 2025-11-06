@@ -13,11 +13,28 @@ pip install -r requirements.txt
 ```
 
 ### 2. Run the Server
+
+**Option A: Using helper script (recommended)**
 ```bash
-python run.py
+./start.sh
+```
+
+**Option B: Manual activation**
+```bash
+source venv/bin/activate  # You should see (venv) in prompt
+python3 run.py
+```
+
+**Option C: Direct venv Python**
+```bash
+./venv/bin/python3 run.py
 ```
 
 Server will start at: `http://localhost:5000`
+
+**⚠️ Important:** Always use the venv Python, NOT system Python!
+- ✅ CORRECT: `source venv/bin/activate && python3 run.py`
+- ❌ WRONG: `/usr/bin/python3 run.py` (will fail with ModuleNotFoundError)
 
 ### 3. Test the API
 ```bash
