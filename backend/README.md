@@ -5,29 +5,41 @@ Flask-based REST API for math diagnostic platform.
 ## Quick Start
 
 ### 1. Setup Environment
+
+**Windows:**
+```cmd
+cd backend
+python -m venv venv
+venv\Scripts\activate
+pip install -r requirements.txt
+python test_setup.py
+```
+
+**Linux/Mac:**
 ```bash
 cd backend
 python3 -m venv venv
-source venv/bin/activate  # On Windows: .\venv\Scripts\activate
+source venv/bin/activate
 pip install -r requirements.txt
+python3 test_setup.py
 ```
 
 ### 2. Run the Server
 
-**Option A: Using helper script (recommended)**
+**Windows:**
+```cmd
+start.bat
+REM OR
+venv\Scripts\activate
+python run.py
+```
+
+**Linux/Mac:**
 ```bash
 ./start.sh
-```
-
-**Option B: Manual activation**
-```bash
-source venv/bin/activate  # You should see (venv) in prompt
+# OR
+source venv/bin/activate
 python3 run.py
-```
-
-**Option C: Direct venv Python**
-```bash
-./venv/bin/python3 run.py
 ```
 
 Server will start at: `http://localhost:5000`

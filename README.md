@@ -1,5 +1,10 @@
 # 🎯 Diag-Raida – Diagnostic Intelligent pour l'Apprentissage des Mathématiques
 
+![CI/CD Pipeline](https://github.com/OUSSAMAEDDERKAOUI/hackathon-sofrecom-diag-raida/workflows/CI/CD%20Pipeline/badge.svg)
+![Pull Request Checks](https://github.com/OUSSAMAEDDERKAOUI/hackathon-sofrecom-diag-raida/workflows/Pull%20Request%20Checks/badge.svg)
+![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue)
+![Flask 3.0](https://img.shields.io/badge/flask-3.0-green)
+
 An AI-powered platform designed to help middle school students diagnose and overcome learning difficulties in mathematics.
 
 ---
