@@ -7,6 +7,7 @@ import { DiagnosticResult, Question, Answer, RecommandationResource, RuleRaminde
 import { CheckCircle, XCircle, AlertTriangle, BookOpen, FileText } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import DataFetcher from './DataFetcher'; 
+import Loading from '../components/ai-loading'
 
 interface ResultsProps {
   diagnostic: DiagnosticResult;
@@ -121,7 +122,7 @@ export function Results({ diagnostic, questions, answers, onViewPlan, onRestart,
 
 
   if (isLoading == true) {
-    return <span>Loading</span>
+    return <Loading />
   }
 
   if (error !== null) {

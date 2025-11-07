@@ -5,6 +5,7 @@ import { Results } from './components/Results';
 import { RemediationPlanComponent } from './components/RemediationPlan';
 import { Answer, ApiResponse, DiagnosticResult, RemediationPlan, RecommandationResource, RuleRaminder, Question } from './types';
 import { analyzeAnswers, generateRemediationPlan } from './utils/analyzer';
+import Loading from './components/ai-loading'
 
 type AppState = 'welcome' | 'quiz' | 'results' | 'plan';
 
@@ -104,8 +105,8 @@ export default function App() {
     setAppState('welcome');
   };
 
-    if (isLoading == true) {
-    return <span>Loading</span>
+  if (isLoading == true) {
+      return <Loading />
   }
 
   if (error !== null) {
