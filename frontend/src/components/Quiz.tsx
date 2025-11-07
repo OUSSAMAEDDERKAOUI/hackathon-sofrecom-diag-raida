@@ -3,14 +3,14 @@ import { Button } from "./ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import { Textarea } from "./ui/textarea";
 import { Progress } from "./ui/progress";
-import { Question, Answer } from '../types';
+import { Question, Answer, ApiResponse } from '../types';
 import { ChevronRight, AlertCircle, Lightbulb, Loader2 } from 'lucide-react';
 import { Alert, AlertDescription } from "./ui/alert";
 import { analyzeSolutionWithLLM } from '../utils/llm-analyzer';
 import exampleImage from 'figma:asset/5c7e91272cb3bf18525dd31fdf255f6af0778d09.png';
 
 interface QuizProps {
-  questions: Question[];
+  questions: Question[],
   onComplete: (answers: Answer[]) => void;
 }
 

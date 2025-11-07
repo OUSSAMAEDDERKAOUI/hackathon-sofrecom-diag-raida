@@ -2,6 +2,7 @@ from flask import Flask, jsonify
 from flask_cors import CORS
 from app.config import config
 from app.routes import (
+    questions_routes, 
     analysis_routes, 
     evaluation_routes, 
     recommendation_routes,
@@ -23,6 +24,7 @@ def create_app(config_name=None):
     app.config.from_object(config.get(config_name, config['default']))
     
     # Register blueprints
+    app.register_blueprint(questions_routes.bp)
     app.register_blueprint(analysis_routes.bp)
     app.register_blueprint(evaluation_routes.bp)
     app.register_blueprint(recommendation_routes.bp)
@@ -45,6 +47,7 @@ def create_app(config_name=None):
             'version': app.config['API_VERSION'],
             'endpoints': {
                 'health': '/health',
+                'questions': '/api/questions',
                 'analysis': '/api/analysis',
                 'evaluation': '/api/evaluation',
                 'recommendation': '/api/recommendation',

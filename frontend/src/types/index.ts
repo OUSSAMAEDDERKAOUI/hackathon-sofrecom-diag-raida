@@ -6,6 +6,11 @@ export interface Question {
   context?: string;
 }
 
+export interface ApiResponse {
+    response: string;
+    model?: string;
+}
+
 export interface Answer {
   questionId: string;
   solutionText: string;
