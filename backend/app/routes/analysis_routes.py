@@ -54,7 +54,27 @@ def analyze():
     if not user_prompt:
         return jsonify({"error": "Prompt is required."}), 400
     
-    user_prompt = "Analyse these student's answers: " + user_prompt
+    user_prompt = f"""
+            Analyse these answers provided by a student and return answer in French in the format of JSON that contains:
+            - correctAnswers: int (e.g: 5)
+            - skillsMastered: list of strings (if there are any, otherwise empty array)
+            - skillsToImprove: list of strings (if there are any, otherwise empty array)
+            - correctAnswersList: list of ids/orders of the answers that were correct
+            - analyses: list of analyses of each wrong question
+            Each analyse will contain:
+            + id: int (the id/order of the question)
+            + errorType: string (description of the error)
+            + Recommandations: list of strings
+            + detectedErrors: list of errors of the current question
+            where is error will contain:
+            * step: string (where the error occured)
+            * problem: string (what is the error)
+            * correction: string (what is the correction of the error)
+            
+            Data:
+            {user_prompt}
+        
+        """
 
     try:
         # Call the Gemini API

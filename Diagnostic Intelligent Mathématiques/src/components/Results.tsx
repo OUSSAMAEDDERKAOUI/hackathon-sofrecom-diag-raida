@@ -5,6 +5,8 @@ import { Separator } from "./ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { DiagnosticResult, Question, Answer } from '../types';
 import { CheckCircle, XCircle, AlertTriangle, BookOpen, FileText } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import DataFetcher from './DataFetcher'; 
 
 interface ResultsProps {
   diagnostic: DiagnosticResult;
@@ -14,8 +16,111 @@ interface ResultsProps {
   onRestart: () => void;
 }
 
+
+interface ApiResponse {
+    response: string;
+    model?: string;
+}
+
+interface Analyse {
+  id: number,
+  Recommandations: string[],
+  detectedErrors: {
+    step: string,
+    problem: string,
+    correction: string
+  }[],
+  errorType: string
+}
+
+
+interface DataFormat {
+    analyses: Analyse[],
+    correctAnswers: number,
+    correctAnswersList: number[],
+    skillsMastered: string[],
+    skillsToImprove: string[],
+}
+
+
+
 export function Results({ diagnostic, questions, answers, onViewPlan, onRestart }: ResultsProps) {
-  const percentage = Math.round((diagnostic.correctAnswers / diagnostic.totalQuestions) * 100);
+
+  const [apiData, setApiData] = useState<DataFormat | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const callFlaskEndpoint = async () => {
+      const url = 'http://127.0.0.1:5000/api/analysis/';
+
+      let req_body : any = {}
+
+      for(let i=0; i<questions.length; i++) {
+        req_body[questions[i].question] = answers[i].solutionText
+      }
+
+      
+      try {
+          // Set initial state via props
+          setError(null);
+          setIsLoading(true);
+
+          const response = await fetch(url, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(req_body)
+              //   {
+              //     'what is the answer of x+5=5?': `x=5+5\nx=10`,
+              //     'what is the answer of 3(x-10)=5?': `3x-10=5\n3x=5+10\n3x=15\nx=15/5\nx=3`,
+              //     'what is the answer of x+10=4?': `x=4-10\nx=-6`,
+              // })
+          });
+
+          if (!response.ok) {
+              const errorBody = await response.text();
+              throw new Error(`HTTP error! Status: ${response.status}. Details: ${errorBody}`);
+          }
+
+          const data: ApiResponse = await response.json(); 
+
+          let json_response = data.response.replace("```json\n", '')
+          json_response = json_response.replace("\n```", '')
+
+          let json : DataFormat = JSON.parse(json_response)
+
+          
+          // 1. Update parent state with fetched data
+          setApiData(json);
+          
+      } catch (err) {
+          if (err instanceof Error) {
+              console.error('Fetch error:', err.message);
+              // 2. Update parent state with error
+              setError(err.message);
+          } else {
+              setError("An unknown error occurred during fetch.");
+          }
+          
+      } finally {
+          // 3. Update parent loading state
+          setIsLoading(false); 
+      }
+  };
+
+  useEffect(() => {
+    callFlaskEndpoint()
+  }, [])
+
+
+  if (isLoading == true) {
+    return <span>Loading</span>
+  }
+
+  if (error !== null) {
+    return <span>Error</span>
+  }
+
+  const percentage = Math.round(((apiData?.correctAnswers as number) / diagnostic.totalQuestions) * 100);
   
   const getPerformanceLevel = (percent: number) => {
     if (percent >= 80) return { label: 'Excellent', color: 'bg-green-500', textColor: 'text-green-700' };
@@ -62,7 +167,7 @@ export function Results({ diagnostic, questions, answers, onViewPlan, onRestart 
               </div>
             </div>
             <CardTitle>
-              {diagnostic.correctAnswers} / {diagnostic.totalQuestions} réponses correctes
+              {apiData?.correctAnswers} / {diagnostic.totalQuestions} réponses correctes
             </CardTitle>
             <CardDescription>
               <Badge className={`${performance.color} text-white mt-2`}>
@@ -81,9 +186,9 @@ export function Results({ diagnostic, questions, answers, onViewPlan, onRestart 
               </div>
             </CardHeader>
             <CardContent>
-              {diagnostic.skillsMastered.length > 0 ? (
+              {apiData?.skillsMastered.length as number > 0 ? (
                 <ul className="space-y-2">
-                  {diagnostic.skillsMastered.map((skill, index) => (
+                  {apiData?.skillsMastered.map((skill, index) => (
                     <li key={index} className="flex items-start">
                       <CheckCircle className="w-5 h-5 text-green-600 mr-2 mt-0.5 flex-shrink-0" />
                       <span className="text-green-800">{skill}</span>
@@ -106,9 +211,9 @@ export function Results({ diagnostic, questions, answers, onViewPlan, onRestart 
               </div>
             </CardHeader>
             <CardContent>
-              {diagnostic.skillsToImprove.length > 0 ? (
+              {apiData?.skillsToImprove.length as number > 0 ? (
                 <ul className="space-y-2">
-                  {diagnostic.skillsToImprove.map((skill, index) => (
+                  {apiData?.skillsToImprove.map((skill, index) => (
                     <li key={index} className="flex items-start">
                       <AlertTriangle className="w-5 h-5 text-orange-600 mr-2 mt-0.5 flex-shrink-0" />
                       <span className="text-orange-800">{skill}</span>
@@ -128,16 +233,16 @@ export function Results({ diagnostic, questions, answers, onViewPlan, onRestart 
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="incorrect" className="flex items-center gap-2">
               <XCircle className="w-4 h-4" />
-              Questions à revoir ({incorrectAnswers.length})
+              Questions à revoir ({apiData?.analyses.length})
             </TabsTrigger>
             <TabsTrigger value="correct" className="flex items-center gap-2">
               <CheckCircle className="w-4 h-4" />
-              Questions réussies ({correctAnswers.length})
+              Questions réussies ({apiData?.correctAnswers})
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="incorrect" className="mt-4">
-            {diagnostic.errors.length > 0 ? (
+            {apiData?.analyses.length as number > 0 ? (
               <Card className="border-2 border-red-200">
                 <CardHeader>
                   <div className="flex items-center gap-2">
@@ -149,32 +254,32 @@ export function Results({ diagnostic, questions, answers, onViewPlan, onRestart 
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {incorrectAnswers.map((answer, index) => {
-                    const question = getQuestionForAnswer(answer);
-                    const error = diagnostic.errors[index];
-                    if (!question || !error) return null;
+                  {apiData?.analyses.map((analyse, index) => {
+                    const question = questions.filter((q) => q.id === 'q' + analyse.id)[0]
+                    // const error = diagnostic.errors[index];
+                    // if (!question || !error) return null;
                     
                     return (
-                      <div key={answer.questionId}>
+                      <div key={analyse.id}>
                         {index > 0 && <Separator className="my-4" />}
                         <div className="space-y-3">
                           <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">
                             <div className="flex items-start gap-2 mb-2">
                               <Badge variant="outline" className="text-red-600 border-red-300">
-                                Question {questions.findIndex(q => q.id === answer.questionId) + 1}
+                                Question {questions.findIndex(q => q.id === 'q' + analyse.id) + 1}
                               </Badge>
-                              <span className="text-sm text-gray-600">{error.skill}</span>
+                              <span className="text-sm text-gray-600">{question.skill}</span>
                             </div>
                             <p className="text-gray-800 mb-2">
                               <strong>Question :</strong> {question.question}
                             </p>
                             <div className="bg-white p-2 rounded border border-gray-300">
                               <p className="text-xs text-gray-600 mb-1"><strong>Votre solution :</strong></p>
-                              <pre className="text-sm whitespace-pre-wrap font-mono text-gray-700">{answer.solutionText}</pre>
+                              <pre className="text-sm whitespace-pre-wrap font-mono text-gray-700">{answers.filter((q) => q.questionId === 'q' + analyse.id)[0].solutionText}</pre>
                             </div>
                           </div>
 
-                          {error.strengths && error.strengths.length > 0 && (
+                          {/* {error.strengths && error.strengths.length > 0 && (
                             <div className="bg-green-50 p-3 rounded-lg border border-green-200">
                               <p className="text-sm text-green-800 mb-2">
                                 <strong>✓ Points forts :</strong>
@@ -188,28 +293,28 @@ export function Results({ diagnostic, questions, answers, onViewPlan, onRestart 
                                 ))}
                               </ul>
                             </div>
-                          )}
+                          )} */}
                           
                           <div className="bg-red-50 p-3 rounded-lg border border-red-200">
                             <p className="text-sm text-red-800 mb-1">
-                              <strong>Type d'erreur :</strong> {error.errorType}
+                              <strong>Type d'erreur :</strong> {analyse.errorType}
                             </p>
-                            <p className="text-sm text-red-700 mb-3">
-                              {error.description}
-                            </p>
+                            {/* <p className="text-sm text-red-700 mb-3">
+                              {analyse.description}
+                            </p> */}
                             
-                            {error.specificErrors && error.specificErrors.length > 0 && (
+                            {analyse.detectedErrors && analyse.detectedErrors.length > 0 && (
                               <div className="space-y-2 mb-3">
                                 <p className="text-sm text-red-800">
                                   <strong>Erreurs détectées :</strong>
                                 </p>
-                                {error.specificErrors.map((specificError, i) => (
+                                {analyse.detectedErrors.map((specificError, i) => (
                                   <div key={i} className="bg-white p-2 rounded border border-red-300">
                                     <p className="text-xs text-gray-600 mb-1">
                                       <strong>Étape :</strong> <code>{specificError.step}</code>
                                     </p>
                                     <p className="text-xs text-red-700 mb-1">
-                                      <strong>Problème :</strong> {specificError.issue}
+                                      <strong>Problème :</strong> {specificError.problem}
                                     </p>
                                     <p className="text-xs text-green-700">
                                       <strong>Correction :</strong> {specificError.correction}
@@ -221,7 +326,14 @@ export function Results({ diagnostic, questions, answers, onViewPlan, onRestart 
                             
                             <div className="bg-white p-2 rounded border border-red-200">
                               <p className="text-sm text-gray-700">
-                                <strong>💡 Recommandation :</strong> {error.recommendation}
+                                <strong>💡 Recommandation :</strong> 
+                                <ul>
+                                  {
+                                    analyse.Recommandations.map((r) => {
+                                      return <li>- {r}</li>
+                                    })
+                                  }
+                                </ul>
                               </p>
                             </div>
                           </div>
@@ -244,7 +356,7 @@ export function Results({ diagnostic, questions, answers, onViewPlan, onRestart 
           </TabsContent>
 
           <TabsContent value="correct" className="mt-4">
-            {correctAnswers.length > 0 ? (
+            {apiData?.correctAnswersList.length as number > 0 ? (
               <Card className="border-2 border-green-200 bg-green-50">
                 <CardHeader>
                   <div className="flex items-center gap-2">
@@ -256,17 +368,17 @@ export function Results({ diagnostic, questions, answers, onViewPlan, onRestart 
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {correctAnswers.map((answer, index) => {
-                    const question = getQuestionForAnswer(answer);
+                  {apiData?.correctAnswersList.map((answerId, index) => {
+                    const question = questions.filter((q) => q.id == 'q' + answerId)[0]
                     if (!question) return null;
                     
                     return (
-                      <div key={answer.questionId}>
+                      <div key={answerId}>
                         {index > 0 && <Separator className="my-4" />}
                         <div className="bg-white p-4 rounded-lg border border-green-300 space-y-3">
                           <div className="flex items-start gap-2">
                             <Badge className="bg-green-600 text-white">
-                              Question {questions.findIndex(q => q.id === answer.questionId) + 1}
+                              Question {questions.findIndex(q => q.id === 'q' + answerId) + 1}
                             </Badge>
                             <span className="text-sm text-green-700">{question.skill}</span>
                           </div>
@@ -280,10 +392,10 @@ export function Results({ diagnostic, questions, answers, onViewPlan, onRestart 
                               <p className="text-xs text-green-700 mb-2">
                                 <strong>Votre solution :</strong>
                               </p>
-                              <pre className="text-sm whitespace-pre-wrap font-mono text-gray-700">{answer.solutionText}</pre>
+                              <pre className="text-sm whitespace-pre-wrap font-mono text-gray-700">{answers.filter((q) => q.questionId == 'q' + answerId)[0].solutionText}</pre>
                             </div>
 
-                            {answer.llmAnalysis?.strengths && answer.llmAnalysis.strengths.length > 0 && (
+                            {/* {answer.llmAnalysis?.strengths && answer.llmAnalysis.strengths.length > 0 && (
                               <div className="bg-green-100 p-2 rounded border border-green-300">
                                 <p className="text-xs text-green-800 mb-1">
                                   <strong>✓ Points forts :</strong>
@@ -297,7 +409,7 @@ export function Results({ diagnostic, questions, answers, onViewPlan, onRestart 
                                   ))}
                                 </ul>
                               </div>
-                            )}
+                            )} */}
                             
                             <div className="flex items-center gap-2 text-green-700">
                               <CheckCircle className="w-5 h-5" />
