@@ -1,30 +1,31 @@
 import { Button } from "./ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import { Badge } from "./ui/badge";
-import { RemediationPlan } from '../types';
+import { RecommandationResource, RuleRaminder } from '../types';
 import { Video, FileText, PenTool, ArrowLeft, ExternalLink } from 'lucide-react';
 
 interface RemediationPlanProps {
-  plan: RemediationPlan;
+  ressources: RecommandationResource[],
+  reminders: RuleRaminder[],
   onBack: () => void;
   onRestart: () => void;
 }
 
-export function RemediationPlanComponent({ plan, onBack, onRestart }: RemediationPlanProps) {
+export function RemediationPlanComponent({ ressources, reminders, onBack, onRestart }: RemediationPlanProps) {
   const getResourceIcon = (type: string) => {
     switch (type) {
-      case 'video': return <Video className="w-5 h-5" />;
-      case 'exercise': return <PenTool className="w-5 h-5" />;
-      case 'lesson': return <FileText className="w-5 h-5" />;
-      default: return <FileText className="w-5 h-5" />;
+      case 'Video': return <Video className="w-5 h-5" />;
+      // case 'exercise': return <PenTool className="w-5 h-5" />;
+      case 'PDF': return <FileText className="w-5 h-5" />;
+      default: return <PenTool className="w-5 h-5" />;
     }
   };
 
   const getResourceColor = (type: string) => {
     switch (type) {
-      case 'video': return 'border-red-200 bg-red-50';
-      case 'exercise': return 'border-blue-200 bg-blue-50';
-      case 'lesson': return 'border-green-200 bg-green-50';
+      case 'Video': return 'border-red-200 bg-red-50';
+      // case 'exercise': return 'border-blue-200 bg-blue-50';
+      case 'PDF': return 'border-green-200 bg-green-50';
       default: return 'border-gray-200 bg-gray-50';
     }
   };
@@ -66,7 +67,7 @@ export function RemediationPlanComponent({ plan, onBack, onRestart }: Remediatio
           </p>
         </div>
 
-        {plan.skills.length > 0 && (
+        {ressources.length > 0 && (
           <Card className="border-2 border-purple-200 mb-6">
             <CardHeader>
               <CardTitle className="text-purple-700">Compétences à travailler</CardTitle>
@@ -76,9 +77,9 @@ export function RemediationPlanComponent({ plan, onBack, onRestart }: Remediatio
             </CardHeader>
             <CardContent>
               <div className="flex flex-wrap gap-2">
-                {plan.skills.map((skill, index) => (
+                {ressources.map((res, index) => (
                   <Badge key={index} variant="outline" className="text-purple-700 border-purple-300">
-                    {skill}
+                    {res.title}
                   </Badge>
                 ))}
               </div>
@@ -87,11 +88,51 @@ export function RemediationPlanComponent({ plan, onBack, onRestart }: Remediatio
         )}
 
         <div className="mb-6">
+          <h3 className="mb-4">Rappels</h3>
+
+          {reminders.length > 0 ? (
+            <div className="space-y-4">
+              {reminders.map((reminder, index) => (
+
+                <Card key={index} className={`border-2 bg-white border-gray-200 hover:shadow-lg transition-shadow`}>
+                  <CardHeader>
+                    <div className="flex items-start justify-between">
+                      <div className="flex flex-col gap-3 flex-1">
+                        <div className="flex-1">
+                          <CardTitle className="text-lg mb-1">{reminder.title}</CardTitle>
+                          <CardDescription>{reminder.rule}</CardDescription>
+                        </div>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div>
+                      <b className="text-sm">Example</b>
+                      <p>{reminder.example}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <Card>
+              <CardContent className="pt-6">
+                <p className="text-center text-gray-600">
+                  Félicitations ! Vous avez maîtrisé toutes les compétences évaluées.
+                </p>
+              </CardContent>
+            </Card>
+          )
+        }
+        </div>
+        
+        
+        <div className="mb-6">
           <h3 className="mb-4">Ressources recommandées</h3>
           
-          {plan.resources.length > 0 ? (
+          {ressources.length > 0 ? (
             <div className="space-y-4">
-              {plan.resources.map((resource, index) => (
+              {ressources.map((resource, index) => (
                 <Card key={index} className={`border-2 ${getResourceColor(resource.type)} hover:shadow-lg transition-shadow`}>
                   <CardHeader>
                     <div className="flex items-start justify-between">
@@ -109,7 +150,14 @@ export function RemediationPlanComponent({ plan, onBack, onRestart }: Remediatio
                         </div>
                       </div>
                       <div>
-                        {getDifficultyBadge(resource.difficulty)}
+                        {
+                          <Badge className={`text-slate-700 bg-white mr-2`}>
+                            {resource.language}
+                          </Badge>
+                        }
+                      </div>
+                      <div>
+                        {getDifficultyBadge(resource.level)}
                       </div>
                     </div>
                   </CardHeader>
@@ -117,7 +165,7 @@ export function RemediationPlanComponent({ plan, onBack, onRestart }: Remediatio
                     <Button 
                       variant="outline" 
                       className="w-full"
-                      onClick={() => window.open(resource.url, '_blank')}
+                      onClick={() => window.open(resource.link, '_blank')}
                     >
                       Accéder à la ressource
                       <ExternalLink className="ml-2 w-4 h-4" />

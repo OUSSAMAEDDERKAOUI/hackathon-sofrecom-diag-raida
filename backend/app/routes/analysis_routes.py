@@ -60,6 +60,19 @@ def analyze():
             - skillsMastered: list of strings (if there are any, otherwise empty array)
             - skillsToImprove: list of strings (if there are any, otherwise empty array)
             - correctAnswersList: list of ids/orders of the answers that were correct
+            - reminders: list of general rules to remind the student, where each item will contain:
+            + title: string (name of the math rule)
+            + rule: string (the description of the rule)
+            + example: string (example of the rule)
+
+            - recommandationRessources: list of mutliple ressources (Videos, PDF, ...) with multiple languages that may help to target the issue, each item will contain:
+            + title: string (the domain of the issue)
+            + description: string (a short description of the ressource in one phrase)
+            + link: string (link to a real working ressource)
+            + level: string (easy, medium, hard)
+            + language: string (Arabic, French, English)
+            + type: string (Video, PDF, ...)
+
             - analyses: list of analyses of each wrong question
             Each analyse will contain:
             + id: int (the id/order of the question)

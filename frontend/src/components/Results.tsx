@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/
 import { Badge } from "./ui/badge";
 import { Separator } from "./ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
-import { DiagnosticResult, Question, Answer } from '../types';
+import { DiagnosticResult, Question, Answer, RecommandationResource, RuleRaminder } from '../types';
 import { CheckCircle, XCircle, AlertTriangle, BookOpen, FileText } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import DataFetcher from './DataFetcher'; 
@@ -14,6 +14,8 @@ interface ResultsProps {
   answers: Answer[];
   onViewPlan: () => void;
   onRestart: () => void;
+  onSetRecommandations: (ressources: RecommandationResource[]) => void;
+  onSetReminders: (reminders: RuleRaminder[]) => void;
 }
 
 
@@ -34,17 +36,20 @@ interface Analyse {
 }
 
 
+
 interface DataFormat {
     analyses: Analyse[],
     correctAnswers: number,
     correctAnswersList: number[],
+    recommandationRessources: RecommandationResource[],
+    reminders: RuleRaminder[],
     skillsMastered: string[],
     skillsToImprove: string[],
 }
 
 
 
-export function Results({ diagnostic, questions, answers, onViewPlan, onRestart }: ResultsProps) {
+export function Results({ diagnostic, questions, answers, onViewPlan, onRestart, onSetRecommandations, onSetReminders }: ResultsProps) {
 
   const [apiData, setApiData] = useState<DataFormat | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -88,7 +93,10 @@ export function Results({ diagnostic, questions, answers, onViewPlan, onRestart 
 
           let json : DataFormat = JSON.parse(json_response)
 
+          console.log(json)
           
+          onSetRecommandations(json.recommandationRessources)
+          onSetReminders(json.reminders)
           // 1. Update parent state with fetched data
           setApiData(json);
           
@@ -326,15 +334,15 @@ export function Results({ diagnostic, questions, answers, onViewPlan, onRestart 
                             
                             <div className="bg-white p-2 rounded border border-red-200">
                               <p className="text-sm text-gray-700">
-                                <strong>💡 Recommandation :</strong> 
-                                <ul>
-                                  {
-                                    analyse.Recommandations.map((r) => {
-                                      return <li>- {r}</li>
-                                    })
-                                  }
-                                </ul>
+                                <strong>💡 Recommandation :</strong>
                               </p>
+                              <ul className="text-sm text-gray-700">
+                                {
+                                  analyse.Recommandations.map((r, index) => {
+                                    return <li key={index}>- {r}</li>
+                                  })
+                                }
+                              </ul>
                             </div>
                           </div>
                         </div>

@@ -60,3 +60,18 @@ export interface RemediationPlan {
   skills: string[];
   resources: Resource[];
 }
+
+export interface RecommandationResource {
+  title: string,
+  description: string,
+  link: string,
+  level: string,
+  language: string,
+  type: string,
+}
+
+export interface RuleRaminder {
+  title: string,
+  rule: string,
+  example: string
+}
